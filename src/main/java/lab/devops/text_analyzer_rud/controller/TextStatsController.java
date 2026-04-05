@@ -1,5 +1,6 @@
 package lab.devops.text_analyzer_rud.controller;
 
+import jakarta.validation.Valid;
 import lab.devops.text_analyzer_rud.model.TextReq;
 import lab.devops.text_analyzer_rud.model.TextStatsRes;
 import lab.devops.text_analyzer_rud.service.TextStats;
@@ -19,7 +20,7 @@ public class TextStatsController {
     private final TextStats textStats;
 
     @PostMapping
-    public ResponseEntity<TextStatsRes> createTextStats(@RequestBody TextReq request) {
+    public ResponseEntity<TextStatsRes> createTextStats(@Valid @RequestBody TextReq request) {
         TextStatsRes response = textStats.createTextStats(request);
 
         return ResponseEntity.status(HttpStatus.OK)
