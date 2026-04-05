@@ -7,9 +7,11 @@ import lab.devops.text_analyzer_rud.model.TextStatsRes;
 import lab.devops.text_analyzer_rud.repository.TextStatsRepository;
 import lab.devops.text_analyzer_rud.service.TextStats;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +23,9 @@ import java.util.stream.Collectors;
 public class TextStatsImpl implements TextStats {
 
     private static final String WORD_SPLITTING_REGEX = "\\W+";
-    private static final int MOST_FREQUENT_WORDS_COUNT = 3;
+
+    @Value("${text_analyzer.word_frequency}")
+    private static int MOST_FREQUENT_WORDS_COUNT;
 
     private final TextStatsRepository repository;
     private final TextStatsMapper mapper;
@@ -43,7 +47,7 @@ public class TextStatsImpl implements TextStats {
                 .wordCount(getWordCount(text))
                 .longestWord(getLongestWord(text))
                 .averageWordLength(getAverageWordLength(text))
-                .mostFrequentWord(getMostFrequentWord(text))
+                .mostFrequentWord(getMostFrequentWords(text))
                 .build();
     }
 
@@ -68,11 +72,12 @@ public class TextStatsImpl implements TextStats {
                 .sum() / getWordCount(text);
     }
 
-    private Map<String, Long> getMostFrequentWord(String text) {
+    private Map<String, Long> getMostFrequentWords(String text) {
         return getWordList(text).stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue(Long::compare).reversed())
+                .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
                 .limit(MOST_FREQUENT_WORDS_COUNT)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o, n) -> o,
                         LinkedHashMap::new));
