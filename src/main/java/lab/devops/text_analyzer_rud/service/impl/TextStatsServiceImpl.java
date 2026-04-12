@@ -5,7 +5,7 @@ import lab.devops.text_analyzer_rud.mapper.TextStatsMapper;
 import lab.devops.text_analyzer_rud.model.TextReq;
 import lab.devops.text_analyzer_rud.model.TextStatsRes;
 import lab.devops.text_analyzer_rud.repository.TextStatsRepository;
-import lab.devops.text_analyzer_rud.service.TextStats;
+import lab.devops.text_analyzer_rud.service.TextStatsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TextStatsImpl implements TextStats {
+public class TextStatsServiceImpl implements TextStatsService {
 
     private static final String WORD_SPLITTING_REGEX = "\\W+";
 
