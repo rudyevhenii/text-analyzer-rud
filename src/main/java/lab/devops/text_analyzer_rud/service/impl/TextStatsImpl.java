@@ -32,9 +32,11 @@ public class TextStatsImpl implements TextStats {
 
     @Override
     public TextStatsRes createTextStats(TextReq textReq) {
+        System.out.println("Main branch is processing text...");
         String text = textReq.getText();
         TextStatsRes textStats = buildTextStats(text);
 
+        System.out.println("Main branch is preparing to save to DB");
         TextStatsEntity savedTextStats = repository.save(mapper.toEntity(textStats));
 
         return mapper.toModel(savedTextStats);
