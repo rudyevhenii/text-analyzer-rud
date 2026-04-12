@@ -7,6 +7,7 @@ import lab.devops.text_analyzer_rud.model.TextStatsRes;
 import lab.devops.text_analyzer_rud.repository.TextStatsRepository;
 import lab.devops.text_analyzer_rud.service.TextStats;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TextStatsImpl implements TextStats {
@@ -32,11 +34,11 @@ public class TextStatsImpl implements TextStats {
 
     @Override
     public TextStatsRes createTextStats(TextReq textReq) {
-        System.out.println("Main branch is processing text...");
+        log.info("Starting analyzing text.");
         String text = textReq.getText();
         TextStatsRes textStats = buildTextStats(text);
 
-        System.out.println("Main branch is preparing to save to DB");
+        log.info("Saving analyzed text to db.");
         TextStatsEntity savedTextStats = repository.save(mapper.toEntity(textStats));
 
         return mapper.toModel(savedTextStats);
