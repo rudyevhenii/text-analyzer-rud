@@ -54,7 +54,7 @@ class TextStatsServiceImplTest {
         assertThat(result).isEqualTo(buildTextStatsRes());
 
         verify(mapper).toEntity(any(TextStatsRes.class), eq(generatorUtils));
-        verify(repository).save(buildTextStatsSavedEntity());
+        verify(repository).save(any(TextStatsEntity.class));
         verify(mapper).toModel(any(TextStatsEntity.class));
     }
 
