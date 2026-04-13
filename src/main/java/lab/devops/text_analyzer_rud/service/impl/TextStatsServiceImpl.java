@@ -26,8 +26,8 @@ public class TextStatsServiceImpl implements TextStatsService {
 
     private static final String WORD_SPLITTING_REGEX = "\\W+";
 
-    @Value("${text_analyzer.word_frequency}")
-    private static int MOST_FREQUENT_WORDS_COUNT;
+    @Value("${text-analyzer.word-frequency}")
+    private int MOST_FREQUENT_WORDS_COUNT;
 
     private final TextStatsRepository repository;
     private final TextStatsMapper mapper;
@@ -35,8 +35,7 @@ public class TextStatsServiceImpl implements TextStatsService {
     @Override
     public TextStatsRes createTextStats(TextReq textReq) {
         log.info("Starting analyzing text.");
-        String text = textReq.getText();
-        TextStatsRes textStats = buildTextStats(text);
+        TextStatsRes textStats = buildTextStats(textReq.getText());
 
         log.info("Saving analyzed text to db.");
         TextStatsEntity savedTextStats = repository.save(mapper.toEntity(textStats));
@@ -51,7 +50,7 @@ public class TextStatsServiceImpl implements TextStatsService {
                 .wordCount(getWordCount(text))
                 .longestWord(getLongestWord(text))
                 .averageWordLength(getAverageWordLength(text))
-                .mostFrequentWord(getMostFrequentWords(text))
+                .mostFrequentWords(getMostFrequentWords(text))
                 .build();
     }
 

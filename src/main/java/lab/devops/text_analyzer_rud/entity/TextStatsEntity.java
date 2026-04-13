@@ -41,7 +41,7 @@ public class TextStatsEntity {
 
     @Convert(converter = MapToJsonConverter.class)
     @Column(columnDefinition = "TEXT")
-    private Map<String, Long> mostFrequentWord;
+    private Map<String, Long> mostFrequentWords;
 
     private Instant createAt;
 

@@ -2,12 +2,15 @@ package lab.devops.text_analyzer_rud.mapper;
 
 import lab.devops.text_analyzer_rud.entity.TextStatsEntity;
 import lab.devops.text_analyzer_rud.model.TextStatsRes;
+import lab.devops.text_analyzer_rud.util.GeneratorUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
-
 @Component
+@RequiredArgsConstructor
 public class TextStatsMapper {
+
+    private final GeneratorUtils generator;
 
     public TextStatsEntity toEntity(TextStatsRes model) {
         return TextStatsEntity.builder()
@@ -16,9 +19,9 @@ public class TextStatsMapper {
                 .wordCount(model.getWordCount())
                 .longestWord(model.getLongestWord())
                 .averageWordLength(model.getAverageWordLength())
-                .mostFrequentWord(model.getMostFrequentWord())
-                .createAt(Instant.now())
-                .updatedAt(Instant.now())
+                .mostFrequentWords(model.getMostFrequentWords())
+                .createAt(generator.now())
+                .updatedAt(generator.now())
                 .build();
     }
 
@@ -29,7 +32,7 @@ public class TextStatsMapper {
                 .wordCount(entity.getWordCount())
                 .longestWord(entity.getLongestWord())
                 .averageWordLength(entity.getAverageWordLength())
-                .mostFrequentWord(entity.getMostFrequentWord())
+                .mostFrequentWords(entity.getMostFrequentWords())
                 .build();
     }
 }

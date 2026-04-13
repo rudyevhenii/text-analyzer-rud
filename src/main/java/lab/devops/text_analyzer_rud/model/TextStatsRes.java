@@ -17,5 +17,5 @@ public class TextStatsRes {
     private int wordCount;
     private int longestWord;
     private double averageWordLength;
-    private Map<String, Long> mostFrequentWord;
+    private Map<String, Long> mostFrequentWords;
 }
