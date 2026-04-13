@@ -35,7 +35,7 @@ public class TextStatsEntity {
 
     private int wordCount;
 
-    private int longestWord;
+    private String longestWord;
 
     private double averageWordLength;
 

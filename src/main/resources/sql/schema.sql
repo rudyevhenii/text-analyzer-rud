@@ -4,7 +4,7 @@ CREATE TABLE text_stats
     original_text       CLOB,
     length              INT                                     NOT NULL,
     word_count          INT                                     NOT NULL,
-    longest_word        INT                                     NOT NULL,
+    longest_word        VARCHAR(255),
     average_word_length DOUBLE PRECISION                        NOT NULL,
     most_frequent_word  VARCHAR(255),
     create_at           TIMESTAMP,
