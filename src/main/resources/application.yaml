@@ -19,5 +19,5 @@ spring:
     init:
       schema-locations: classpath:sql/schema.sql
 
-text_analyzer:
-  word_frequency: 3
+text-analyzer:
+  word-frequency: 3

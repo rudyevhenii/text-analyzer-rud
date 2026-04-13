@@ -12,10 +12,11 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class TextStatsRes {
+    private long id;
     private String originalText;
     private int length;
     private int wordCount;
-    private int longestWord;
+    private String longestWord;
     private double averageWordLength;
-    private Map<String, Long> mostFrequentWord;
+    private Map<String, Long> mostFrequentWords;
 }

@@ -1,11 +1,13 @@
 package lab.devops.text_analyzer_rud.service.impl;
 
+import lab.devops.text_analyzer_rud.config.TextAnalyzerProperties;
 import lab.devops.text_analyzer_rud.entity.TextStatsEntity;
 import lab.devops.text_analyzer_rud.mapper.TextStatsMapper;
 import lab.devops.text_analyzer_rud.model.TextReq;
 import lab.devops.text_analyzer_rud.model.TextStatsRes;
 import lab.devops.text_analyzer_rud.repository.TextStatsRepository;
 import lab.devops.text_analyzer_rud.service.TextStatsService;
+import lab.devops.text_analyzer_rud.util.GeneratorUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,20 +28,18 @@ public class TextStatsServiceImpl implements TextStatsService {
 
     private static final String WORD_SPLITTING_REGEX = "\\W+";
 
-    @Value("${text_analyzer.word_frequency}")
-    private static int MOST_FREQUENT_WORDS_COUNT;
-
     private final TextStatsRepository repository;
     private final TextStatsMapper mapper;
+    private final GeneratorUtils generatorUtils;
+    private final TextAnalyzerProperties textAnalyzerProperties;
 
     @Override
     public TextStatsRes createTextStats(TextReq textReq) {
         log.info("Starting analyzing text.");
-        String text = textReq.getText();
-        TextStatsRes textStats = buildTextStats(text);
+        TextStatsRes textStats = buildTextStats(textReq.getText());
 
         log.info("Saving analyzed text to db.");
-        TextStatsEntity savedTextStats = repository.save(mapper.toEntity(textStats));
+        TextStatsEntity savedTextStats = repository.save(mapper.toEntity(textStats, generatorUtils));
 
         return mapper.toModel(savedTextStats);
     }
@@ -51,7 +51,7 @@ public class TextStatsServiceImpl implements TextStatsService {
                 .wordCount(getWordCount(text))
                 .longestWord(getLongestWord(text))
                 .averageWordLength(getAverageWordLength(text))
-                .mostFrequentWord(getMostFrequentWords(text))
+                .mostFrequentWords(getMostFrequentWords(text))
                 .build();
     }
 
@@ -63,10 +63,10 @@ public class TextStatsServiceImpl implements TextStatsService {
         return getWordList(text).size();
     }
 
-    private int getLongestWord(String text) {
+    private String getLongestWord(String text) {
         return getWordList(text).stream()
-                .mapToInt(String::length)
-                .max()
+                .min(Comparator.comparing(String::length).reversed()
+                        .thenComparing(Comparator.naturalOrder()))
                 .orElseThrow(() -> new IllegalArgumentException("Could not determine the longest word"));
     }
 
@@ -82,7 +82,7 @@ public class TextStatsServiceImpl implements TextStatsService {
                 .entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
                         .thenComparing(Map.Entry.comparingByKey()))
-                .limit(MOST_FREQUENT_WORDS_COUNT)
+                .limit(textAnalyzerProperties.getWordFrequency())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (o, n) -> o,
                         LinkedHashMap::new));
     }
