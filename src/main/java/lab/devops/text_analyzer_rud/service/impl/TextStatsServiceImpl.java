@@ -2,6 +2,7 @@ package lab.devops.text_analyzer_rud.service.impl;
 
 import lab.devops.text_analyzer_rud.config.TextStatsProperties;
 import lab.devops.text_analyzer_rud.entity.TextStatsEntity;
+import lab.devops.text_analyzer_rud.handler.TextStatsNotFoundException;
 import lab.devops.text_analyzer_rud.mapper.TextStatsMapper;
 import lab.devops.text_analyzer_rud.model.TextReq;
 import lab.devops.text_analyzer_rud.model.TextStats;
@@ -17,7 +18,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,7 +58,8 @@ public class TextStatsServiceImpl implements TextStatsService {
         log.info("Searching for text stats with id {}", id);
 
         TextStatsEntity textStatsEntity = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Text statistics with id %d does not exist.".formatted(id)));
+                .orElseThrow(() -> new TextStatsNotFoundException(
+                        "Text statistics with id %d does not exist.".formatted(id)));
 
         return mapper.toModel(textStatsEntity);
     }

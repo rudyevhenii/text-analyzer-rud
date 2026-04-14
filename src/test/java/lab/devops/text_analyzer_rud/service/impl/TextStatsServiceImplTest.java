@@ -2,6 +2,7 @@ package lab.devops.text_analyzer_rud.service.impl;
 
 import lab.devops.text_analyzer_rud.config.TextStatsProperties;
 import lab.devops.text_analyzer_rud.entity.TextStatsEntity;
+import lab.devops.text_analyzer_rud.handler.TextStatsNotFoundException;
 import lab.devops.text_analyzer_rud.mapper.TextStatsMapper;
 import lab.devops.text_analyzer_rud.model.TextReq;
 import lab.devops.text_analyzer_rud.model.TextStats;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 import static lab.devops.text_analyzer_rud.service.impl.TextStatsServiceImplTest.TestResources.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -84,6 +86,15 @@ class TextStatsServiceImplTest {
         verify(mapper).toModel(any(TextStatsEntity.class));
     }
 
+    @Test
+    void findTextStatsById_shouldThrowExceptionWhenGivenNonExistentId() {
+        when(repository.findById(NON_EXISTENT_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.findTextStatsById(NON_EXISTENT_ID))
+                .isInstanceOfAny(TextStatsNotFoundException.class)
+                .hasMessage("Text statistics with id %d does not exist.".formatted(NON_EXISTENT_ID));
+    }
+
     static class TestResources {
 
         public static final String INPUT_TEXT = "Hello World. Hello Java!";
@@ -109,6 +120,8 @@ class TextStatsServiceImplTest {
 
         public static final Instant CREATED_AT = Instant.parse("2026-04-12T12:00:00Z");
         public static final Instant UPDATED_AT = Instant.parse("2026-04-12T12:00:00Z");
+
+        public static final long NON_EXISTENT_ID = 999;
 
         public static final int WORD_FREQUENCY = 3;
 

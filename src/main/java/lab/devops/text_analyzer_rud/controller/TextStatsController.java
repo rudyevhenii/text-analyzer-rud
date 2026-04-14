@@ -27,7 +27,7 @@ public class TextStatsController {
     public ResponseEntity<TextStats> createTextStats(@Valid @RequestBody TextReq request) {
         TextStats response = textStatsService.createTextStats(request);
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
     }
 

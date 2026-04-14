@@ -46,4 +46,14 @@ public class GlobalExceptionHandler {
                         .timestamp(Instant.now())
                         .build());
     }
+
+    @ExceptionHandler(TextStatsNotFoundException.class)
+    public ResponseEntity<ErrorResponse> hanldeException(TextStatsNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.builder()
+                        .message(e.getMessage())
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .timestamp(Instant.now())
+                        .build());
+    }
 }
