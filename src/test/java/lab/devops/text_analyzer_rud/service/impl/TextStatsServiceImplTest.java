@@ -1,10 +1,11 @@
 package lab.devops.text_analyzer_rud.service.impl;
 
-import lab.devops.text_analyzer_rud.config.TextAnalyzerProperties;
+import lab.devops.text_analyzer_rud.config.TextStatsProperties;
 import lab.devops.text_analyzer_rud.entity.TextStatsEntity;
+import lab.devops.text_analyzer_rud.handler.TextStatsNotFoundException;
 import lab.devops.text_analyzer_rud.mapper.TextStatsMapper;
 import lab.devops.text_analyzer_rud.model.TextReq;
-import lab.devops.text_analyzer_rud.model.TextStatsRes;
+import lab.devops.text_analyzer_rud.model.TextStats;
 import lab.devops.text_analyzer_rud.repository.TextStatsRepository;
 import lab.devops.text_analyzer_rud.util.GeneratorUtils;
 import org.junit.jupiter.api.Test;
@@ -16,14 +17,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static lab.devops.text_analyzer_rud.service.impl.TextStatsServiceImplTest.TestResources.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TextStatsServiceImplTest {
@@ -38,24 +41,58 @@ class TextStatsServiceImplTest {
     private GeneratorUtils generatorUtils;
 
     @Mock
-    private TextAnalyzerProperties textAnalyzerProperties;
+    private TextStatsProperties textStatsProperties;
 
     @InjectMocks
     private TextStatsServiceImpl service;
 
     @Test
     void createTextStats_shouldAnalyzeAndSaveSuccessfully() {
-        when(repository.save(buildTextStatsEntity())).thenReturn(buildTextStatsSavedEntity());
+        when(repository.save(buildTextStatsEntity())).thenReturn(buildTextStatsSavedEntity1());
         when(generatorUtils.now()).thenReturn(CREATED_AT);
-        when(textAnalyzerProperties.getWordFrequency()).thenReturn(WORD_FREQUENCY);
+        when(textStatsProperties.getWordFrequency()).thenReturn(WORD_FREQUENCY);
 
-        TextStatsRes result = service.createTextStats(buildTextReq());
+        TextStats result = service.createTextStats(buildTextReq());
 
-        assertThat(result).isEqualTo(buildTextStatsRes());
+        assertThat(result).isEqualTo(buildTextStats1());
 
-        verify(mapper).toEntity(any(TextStatsRes.class), eq(generatorUtils));
+        verify(mapper).toEntity(any(TextStats.class), eq(generatorUtils));
         verify(repository).save(any(TextStatsEntity.class));
         verify(mapper).toModel(any(TextStatsEntity.class));
+    }
+
+    @Test
+    void findAllTextStats_shouldSuccessfullyReturnAllTextStats() {
+        when(repository.findAll()).thenReturn(buildTextStatsEntityList());
+
+        List<TextStats> result = service.findAllTextStats();
+
+        assertThat(result)
+                .usingRecursiveComparison()
+                .isEqualTo(buildTextStatsEntityList());
+
+        verify(repository).findAll();
+        verify(mapper, times(buildTextStatsEntityList().size())).toModel(any(TextStatsEntity.class));
+    }
+
+    @Test
+    void findTextStatsById_shouldSuccessfullyReturnTextStatsByGivenId() {
+        when(repository.findById(ID)).thenReturn(Optional.of(buildTextStatsSavedEntity1()));
+
+        TextStats result = service.findTextStatsById(ID);
+
+        assertThat(result).isEqualTo(buildTextStats1());
+
+        verify(mapper).toModel(any(TextStatsEntity.class));
+    }
+
+    @Test
+    void findTextStatsById_shouldThrowExceptionWhenGivenNonExistentId() {
+        when(repository.findById(NON_EXISTENT_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.findTextStatsById(NON_EXISTENT_ID))
+                .isInstanceOfAny(TextStatsNotFoundException.class)
+                .hasMessage("Text statistics with id %d does not exist.".formatted(NON_EXISTENT_ID));
     }
 
     static class TestResources {
@@ -69,8 +106,22 @@ class TextStatsServiceImplTest {
         public static final double AVERAGE_WORD_LENGTH = 4.75;
         public static final Map<String, Long> MOST_FREQUENT_WORDS = getMostFrequentWords();
 
+        public static final String INPUT_TEXT_2 = """
+                Spring Boot is awesome!
+                (Spring makes Java better, and Java makes Spring possible).
+                """;
+
+        public static final long ID_2 = 2;
+        public static final int LENGTH_2 = 83;
+        public static final int WORD_COUNT_2 = 13;
+        public static final String LONGEST_WORD_2 = "possible";
+        public static final double AVERAGE_WORD_LENGTH_2 = 5.076923076923077;
+        public static final Map<String, Long> MOST_FREQUENT_WORDS_2 = getMostFrequentWords2();
+
         public static final Instant CREATED_AT = Instant.parse("2026-04-12T12:00:00Z");
         public static final Instant UPDATED_AT = Instant.parse("2026-04-12T12:00:00Z");
+
+        public static final long NON_EXISTENT_ID = 999;
 
         public static final int WORD_FREQUENCY = 3;
 
@@ -83,10 +134,26 @@ class TextStatsServiceImplTest {
             return mostFrequentWords;
         }
 
+        private static Map<String, Long> getMostFrequentWords2() {
+            Map<String, Long> mostFrequentWords = new LinkedHashMap<>();
+            mostFrequentWords.put("Spring", 3L);
+            mostFrequentWords.put("Java", 2L);
+            mostFrequentWords.put("makes", 2L);
+
+            return mostFrequentWords;
+        }
+
         public static TextReq buildTextReq() {
             return TextReq.builder()
                     .text(INPUT_TEXT)
                     .build();
+        }
+
+        public static List<TextStatsEntity> buildTextStatsEntityList() {
+            return List.of(
+                    buildTextStatsSavedEntity1(),
+                    buildTextStatsSavedEntity2()
+            );
         }
 
         public static TextStatsEntity buildTextStatsEntity() {
@@ -102,7 +169,7 @@ class TextStatsServiceImplTest {
                     .build();
         }
 
-        public static TextStatsEntity buildTextStatsSavedEntity() {
+        public static TextStatsEntity buildTextStatsSavedEntity1() {
             return TextStatsEntity.builder()
                     .id(ID)
                     .originalText(INPUT_TEXT)
@@ -116,8 +183,29 @@ class TextStatsServiceImplTest {
                     .build();
         }
 
-        public static TextStatsRes buildTextStatsRes() {
-            return TextStatsRes.builder()
+        public static TextStatsEntity buildTextStatsSavedEntity2() {
+            return TextStatsEntity.builder()
+                    .id(ID_2)
+                    .originalText(INPUT_TEXT_2)
+                    .length(LENGTH_2)
+                    .wordCount(WORD_COUNT_2)
+                    .longestWord(LONGEST_WORD_2)
+                    .averageWordLength(AVERAGE_WORD_LENGTH_2)
+                    .mostFrequentWords(MOST_FREQUENT_WORDS_2)
+                    .createAt(CREATED_AT)
+                    .updatedAt(UPDATED_AT)
+                    .build();
+        }
+
+        public static List<TextStats> buildTextStatsList() {
+            return List.of(
+                    buildTextStats1(),
+                    buildTextStats2()
+            );
+        }
+
+        public static TextStats buildTextStats1() {
+            return TextStats.builder()
                     .id(ID)
                     .originalText(INPUT_TEXT)
                     .length(LENGTH)
@@ -125,6 +213,18 @@ class TextStatsServiceImplTest {
                     .longestWord(LONGEST_WORD)
                     .averageWordLength(AVERAGE_WORD_LENGTH)
                     .mostFrequentWords(MOST_FREQUENT_WORDS)
+                    .build();
+        }
+
+        public static TextStats buildTextStats2() {
+            return TextStats.builder()
+                    .id(ID_2)
+                    .originalText(INPUT_TEXT_2)
+                    .length(LENGTH_2)
+                    .wordCount(WORD_COUNT_2)
+                    .longestWord(LONGEST_WORD_2)
+                    .averageWordLength(AVERAGE_WORD_LENGTH_2)
+                    .mostFrequentWords(MOST_FREQUENT_WORDS_2)
                     .build();
         }
     }
