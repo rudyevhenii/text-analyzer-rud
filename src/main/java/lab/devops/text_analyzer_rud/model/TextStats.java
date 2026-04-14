@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TextStatsRes {
+public class TextStats {
     private long id;
     private String originalText;
     private int length;

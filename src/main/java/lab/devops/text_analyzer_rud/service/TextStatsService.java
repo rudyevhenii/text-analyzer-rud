@@ -1,9 +1,15 @@
 package lab.devops.text_analyzer_rud.service;
 
 import lab.devops.text_analyzer_rud.model.TextReq;
-import lab.devops.text_analyzer_rud.model.TextStatsRes;
+import lab.devops.text_analyzer_rud.model.TextStats;
+
+import java.util.List;
 
 public interface TextStatsService {
 
-    TextStatsRes createTextStats(TextReq text);
+    TextStats createTextStats(TextReq text);
+
+    List<TextStats> findAllTextStats();
+
+    TextStats findTextStatsById(long id);
 }

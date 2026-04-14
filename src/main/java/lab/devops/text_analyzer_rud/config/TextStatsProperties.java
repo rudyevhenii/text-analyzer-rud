@@ -5,6 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Data
 @ConfigurationProperties(prefix = "text-analyzer")
-public class TextAnalyzerProperties {
+public class TextStatsProperties {
     private int wordFrequency;
 }
