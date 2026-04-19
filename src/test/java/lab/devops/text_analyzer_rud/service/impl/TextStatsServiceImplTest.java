@@ -119,7 +119,7 @@ class TextStatsServiceImplTest {
 
         service.deleteTextStats(ID);
 
-        verify(repository).findById(NON_EXISTENT_ID);
+        verify(repository).findById(ID);
         verify(repository).delete(any(TextStatsEntity.class));
     }
 
