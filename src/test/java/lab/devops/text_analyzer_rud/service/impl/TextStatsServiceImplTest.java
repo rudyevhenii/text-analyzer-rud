@@ -95,10 +95,37 @@ class TextStatsServiceImplTest {
                 .hasMessage("Text statistics with id %d does not exist.".formatted(NON_EXISTENT_ID));
     }
 
+    @Test
+    void updateTextStats_shouldSuccessfullyUpdateAndReturnTextStats() {
+        when(repository.findById(ID)).thenReturn(Optional.of(buildTextStatsSavedEntity1()));
+        when(generatorUtils.now()).thenReturn(UPDATED_AT);
+        when(repository.save(buildTextStatsSavedEntityUpdated1())).thenReturn(buildTextStatsSavedEntityUpdated1());
+        when(mapper.toModel(buildTextStatsSavedEntityUpdated1())).thenReturn(buildTextStatsUpdated1());
+        when(textStatsProperties.getWordFrequency()).thenReturn(WORD_FREQUENCY);
+
+        TextStats result = service.updateTextStats(ID, buildTextReqUpdated());
+
+        assertThat(result).isEqualTo(buildTextStatsUpdated1());
+
+        verify(mapper).toEntityUpdate(any(TextStats.class), any(TextStatsEntity.class), eq(generatorUtils));
+        verify(repository).save(any(TextStatsEntity.class));
+        verify(mapper).toModel(any(TextStatsEntity.class));
+    }
+
+    @Test
+    void deleteTextStats_shouldSuccessfullyDeleteAndReturnNothing() {
+        when(repository.findById(ID)).thenReturn(Optional.of(buildTextStatsSavedEntity1()));
+        doNothing().when(repository).delete(buildTextStatsSavedEntity1());
+
+        service.deleteTextStats(ID);
+
+        verify(repository).findById(NON_EXISTENT_ID);
+        verify(repository).delete(any(TextStatsEntity.class));
+    }
+
     static class TestResources {
 
         public static final String INPUT_TEXT = "Hello World. Hello Java!";
-
         public static final long ID = 1;
         public static final int LENGTH = 24;
         public static final int WORD_COUNT = 4;
@@ -106,11 +133,17 @@ class TextStatsServiceImplTest {
         public static final double AVERAGE_WORD_LENGTH = 4.75;
         public static final Map<String, Long> MOST_FREQUENT_WORDS = getMostFrequentWords();
 
+        public static final String INPUT_TEXT_UPDATED = "Hello World. Hello Java! And hello Spring Boot!";
+        public static final int LENGTH_UPDATED = 47;
+        public static final int WORD_COUNT_UPDATED = 8;
+        public static final String LONGEST_WORD_UPDATED = "Spring";
+        public static final double AVERAGE_WORD_LENGTH_UPDATED = 4.625;
+        public static final Map<String, Long> MOST_FREQUENT_WORDS_UPDATED = getMostFrequentWordsUpdated();
+
         public static final String INPUT_TEXT_2 = """
                 Spring Boot is awesome!
                 (Spring makes Java better, and Java makes Spring possible).
                 """;
-
         public static final long ID_2 = 2;
         public static final int LENGTH_2 = 83;
         public static final int WORD_COUNT_2 = 13;
@@ -119,7 +152,7 @@ class TextStatsServiceImplTest {
         public static final Map<String, Long> MOST_FREQUENT_WORDS_2 = getMostFrequentWords2();
 
         public static final Instant CREATED_AT = Instant.parse("2026-04-12T12:00:00Z");
-        public static final Instant UPDATED_AT = Instant.parse("2026-04-12T12:00:00Z");
+        public static final Instant UPDATED_AT = Instant.parse("2026-05-12T12:00:00Z");
 
         public static final long NON_EXISTENT_ID = 999;
 
@@ -127,17 +160,26 @@ class TextStatsServiceImplTest {
 
         private static Map<String, Long> getMostFrequentWords() {
             Map<String, Long> mostFrequentWords = new LinkedHashMap<>();
-            mostFrequentWords.put("Hello", 2L);
-            mostFrequentWords.put("Java", 1L);
-            mostFrequentWords.put("World", 1L);
+            mostFrequentWords.put("hello", 2L);
+            mostFrequentWords.put("java", 1L);
+            mostFrequentWords.put("world", 1L);
+
+            return mostFrequentWords;
+        }
+
+        private static Map<String, Long> getMostFrequentWordsUpdated() {
+            Map<String, Long> mostFrequentWords = new LinkedHashMap<>();
+            mostFrequentWords.put("hello", 3L);
+            mostFrequentWords.put("and", 1L);
+            mostFrequentWords.put("boot", 1L);
 
             return mostFrequentWords;
         }
 
         private static Map<String, Long> getMostFrequentWords2() {
             Map<String, Long> mostFrequentWords = new LinkedHashMap<>();
-            mostFrequentWords.put("Spring", 3L);
-            mostFrequentWords.put("Java", 2L);
+            mostFrequentWords.put("spring", 3L);
+            mostFrequentWords.put("java", 2L);
             mostFrequentWords.put("makes", 2L);
 
             return mostFrequentWords;
@@ -146,6 +188,12 @@ class TextStatsServiceImplTest {
         public static TextReq buildTextReq() {
             return TextReq.builder()
                     .text(INPUT_TEXT)
+                    .build();
+        }
+
+        public static TextReq buildTextReqUpdated() {
+            return TextReq.builder()
+                    .text(INPUT_TEXT_UPDATED)
                     .build();
         }
 
@@ -165,7 +213,7 @@ class TextStatsServiceImplTest {
                     .averageWordLength(AVERAGE_WORD_LENGTH)
                     .mostFrequentWords(MOST_FREQUENT_WORDS)
                     .createAt(CREATED_AT)
-                    .updatedAt(UPDATED_AT)
+                    .updatedAt(CREATED_AT)
                     .build();
         }
 
@@ -178,6 +226,20 @@ class TextStatsServiceImplTest {
                     .longestWord(LONGEST_WORD)
                     .averageWordLength(AVERAGE_WORD_LENGTH)
                     .mostFrequentWords(MOST_FREQUENT_WORDS)
+                    .createAt(CREATED_AT)
+                    .updatedAt(CREATED_AT)
+                    .build();
+        }
+
+        public static TextStatsEntity buildTextStatsSavedEntityUpdated1() {
+            return TextStatsEntity.builder()
+                    .id(ID)
+                    .originalText(INPUT_TEXT_UPDATED)
+                    .length(LENGTH_UPDATED)
+                    .wordCount(WORD_COUNT_UPDATED)
+                    .longestWord(LONGEST_WORD_UPDATED)
+                    .averageWordLength(AVERAGE_WORD_LENGTH_UPDATED)
+                    .mostFrequentWords(MOST_FREQUENT_WORDS_UPDATED)
                     .createAt(CREATED_AT)
                     .updatedAt(UPDATED_AT)
                     .build();
@@ -193,7 +255,7 @@ class TextStatsServiceImplTest {
                     .averageWordLength(AVERAGE_WORD_LENGTH_2)
                     .mostFrequentWords(MOST_FREQUENT_WORDS_2)
                     .createAt(CREATED_AT)
-                    .updatedAt(UPDATED_AT)
+                    .updatedAt(CREATED_AT)
                     .build();
         }
 
@@ -213,6 +275,17 @@ class TextStatsServiceImplTest {
                     .longestWord(LONGEST_WORD)
                     .averageWordLength(AVERAGE_WORD_LENGTH)
                     .mostFrequentWords(MOST_FREQUENT_WORDS)
+                    .build();
+        }
+
+        public static TextStats buildTextStatsUpdated1() {
+            return TextStats.builder()
+                    .originalText(INPUT_TEXT_UPDATED)
+                    .length(LENGTH_UPDATED)
+                    .wordCount(WORD_COUNT_UPDATED)
+                    .longestWord(LONGEST_WORD_UPDATED)
+                    .averageWordLength(AVERAGE_WORD_LENGTH_UPDATED)
+                    .mostFrequentWords(MOST_FREQUENT_WORDS_UPDATED)
                     .build();
         }
 
