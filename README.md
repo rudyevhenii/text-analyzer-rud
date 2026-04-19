@@ -1,8 +1,6 @@
 # Text Analyzer Service 🚀
 
-A robust Spring Boot application built with **Java 21** designed to perform deep text analysis. It calculates metrics
-such as word frequency, average length, and identifies the longest words, persisting all results in an H2 in-memory
-database.
+A robust Spring Boot application built with **Java 21** designed to perform deep text analysis. It calculates metrics such as word frequency, average length, and identifies the longest words, persisting all results in an H2 in-memory database.
 
 ## 🛠 Tech Stack
 
@@ -15,26 +13,27 @@ database.
 
 ## ✨ Key Features
 
-* **Text Analysis:** Automated calculation of:
-    * Total character length.
-    * Total word count.
-    * Longest word (with alphabetical fallback).
-    * Average word length.
-    * Top-N most frequent words (configurable).
+- **Text Analysis:** Automated calculation of:
+  - Total character length.
+  - Total word count.
+  - Longest word (with alphabetical fallback).
+  - Average word length.
+  - Top-N most frequent words (configurable).
 * **Persistence:** All analyzed results are stored in an H2 database using Spring Data JPA.
 * **Validation:** Robust input validation using Hibernate Validator to ensure no blank submissions.
-* **Global Exception Handling:** Standardized error responses for missing resources (`404`), validation errors (`400`),
-  and internal issues (`500`).
+* **Global Exception Handling:** Standardized error responses for missing resources (`404`), validation errors (`400`), and internal issues (`500`).
 
 ## 📋 API Reference
 
 ### Text Statistics Endpoints
 
-| Method | Endpoint               | Description                   |
+| Method | Endpoint | Description |
 |:-------|:-----------------------|:------------------------------|
-| `POST` | `/api/text-stats`      | Analyze and save new text     |
-| `GET`  | `/api/text-stats`      | Retrieve all analysis history |
-| `GET`  | `/api/text-stats/{id}` | Get specific analysis by ID   |
+| `POST`   | `/api/text-stats`           | Analyze and save new text |
+| `GET`    | `/api/text-stats`           | Retrieve all analysis history |
+| `GET`    | `/api/text-stats/{id}`      | Get specific analysis by ID |
+| `PATCH`  | `/api/text-stats/{id}`      | Update existing text analysis |
+| `DELETE` | `/api/text-stats/{id}`      | Delete text analysis record |
 
 #### Sample Request (POST /api/text-stats)
 
@@ -62,7 +61,7 @@ database.
 }
 ```
 
-## ⚠️ Error Handling
+### Error Handling
 
 The application uses a @RestControllerAdvice to ensure consistent error formats across the API.
 
@@ -84,7 +83,7 @@ The application uses a @RestControllerAdvice to ensure consistent error formats 
 
 ## ⚙️ Configuration
 
-The application is highly configurable via src/main/resources/application.yml:
+The application is highly configurable via `src/main/resources/application.yml`:
 
 ```yaml
 text-analyzer:
@@ -117,6 +116,19 @@ mvn test
 
 4. **Access H2 Console:**
    Navigate to http://localhost:8080/h2-console
-    * JDBC URL: jdbc:h2:mem:text_analyzer
-    * User: sa
-    * Password: (empty)
+   * JDBC URL: jdbc:h2:mem:text_analyzer
+   * User: sa
+   * Password: (empty)
+
+## ⚙️ Configuration Details
+
+The service can be configured via `src/main/resources/application.yaml`. Currently supported options:
+
+```yaml
+text-analyzer:
+  word-frequency: 3  # Number of top frequent words returned in the analysis
+```
+
+Adjust `word-frequency` to change how many of the most frequent words are included in the response.
+
+You can also modify standard Spring Boot settings such as the H2 console enable flag or JPA properties directly in this file.
