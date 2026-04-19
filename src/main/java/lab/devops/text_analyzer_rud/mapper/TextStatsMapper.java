@@ -32,4 +32,18 @@ public class TextStatsMapper {
                 .mostFrequentWords(entity.getMostFrequentWords())
                 .build();
     }
+
+    public TextStatsEntity toEntityUpdate(TextStats model, TextStatsEntity entity, GeneratorUtils generatorUtils) {
+        return TextStatsEntity.builder()
+                .id(entity.getId())
+                .originalText(model.getOriginalText())
+                .length(model.getLength())
+                .wordCount(model.getWordCount())
+                .longestWord(model.getLongestWord())
+                .averageWordLength(model.getAverageWordLength())
+                .mostFrequentWords(model.getMostFrequentWords())
+                .createAt(entity.getCreateAt())
+                .updatedAt(generatorUtils.now())
+                .build();
+    }
 }
