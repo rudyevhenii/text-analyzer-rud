@@ -69,12 +69,11 @@ jobs:
       - name: Run Smoke Test Simulation
         run: |
           echo "🔍 Running smoke tests on staging..."
-          # Імітація Assert.Equals(1,1)
-          if [ 1 -eq 1 ]; then
+          if [ 1 -eq 2 ]; then
             echo "✅ Smoke test passed. Staging is healthy."
             exit 0
           else
-            echo "❌ Smoke test failed!"
+            echo "❌ Smoke test failed! The app didn't start properly."
             exit 1
           fi
 
