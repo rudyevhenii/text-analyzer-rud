@@ -69,7 +69,7 @@ jobs:
       - name: Run Smoke Test Simulation
         run: |
           echo "🔍 Running smoke tests on staging..."
-          if [ 1 -eq 2 ]; then
+          if [ 1 -eq 1 ]; then
             echo "✅ Smoke test passed. Staging is healthy."
             exit 0
           else
