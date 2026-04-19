@@ -12,4 +12,8 @@ public interface TextStatsService {
     List<TextStats> findAllTextStats();
 
     TextStats findTextStatsById(long id);
+
+    TextStats updateTextStats(long id, TextReq text);
+
+    void deleteTextStats(long id);
 }

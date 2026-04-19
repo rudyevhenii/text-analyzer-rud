@@ -57,11 +57,36 @@ public class TextStatsServiceImpl implements TextStatsService {
     public TextStats findTextStatsById(long id) {
         log.info("Searching for text stats with id {}", id);
 
-        TextStatsEntity textStatsEntity = repository.findById(id)
-                .orElseThrow(() -> new TextStatsNotFoundException(
-                        "Text statistics with id %d does not exist.".formatted(id)));
+        TextStatsEntity textStatsEntity = findTextStatsEntityById(id);
 
         return mapper.toModel(textStatsEntity);
+    }
+
+    @Override
+    public TextStats updateTextStats(long id, TextReq text) {
+        TextStatsEntity textStatsEntity = findTextStatsEntityById(id);
+
+        TextStats textStats = buildTextStats(text.getText());
+
+        TextStatsEntity entityToUpdate = mapper.toEntityUpdate(textStats, textStatsEntity, generatorUtils);
+        TextStatsEntity updatedEntity = repository.save(entityToUpdate);
+        log.info("Updated text stats entity successfully: {}", updatedEntity);
+
+        return mapper.toModel(updatedEntity);
+    }
+
+    @Override
+    public void deleteTextStats(long id) {
+        TextStatsEntity textStatsEntity = findTextStatsEntityById(id);
+
+        repository.delete(textStatsEntity);
+        log.info("Deleted text stats successfully with id: {}", id);
+    }
+
+    private TextStatsEntity findTextStatsEntityById(long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new TextStatsNotFoundException(
+                        "Text statistics with id %d does not exist.".formatted(id)));
     }
 
     private TextStats buildTextStats(String text) {
@@ -97,7 +122,7 @@ public class TextStatsServiceImpl implements TextStatsService {
     }
 
     private Map<String, Long> getMostFrequentWords(String text) {
-        return getWordList(text).stream()
+        return getWordList(text.toLowerCase()).stream()
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
